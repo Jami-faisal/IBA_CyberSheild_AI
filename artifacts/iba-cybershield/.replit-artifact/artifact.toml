@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "IBA CyberShield AI"
+description = "A free, no-sign-up cybersecurity awareness chat and FAQ for students, helping them understand scams, phishing, two-factor authentication, and account safety."
+version = "1.0.0"
+id = "artifacts/iba-cybershield"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25157
+
+[services.development]
+run = "pnpm --filter @workspace/iba-cybershield run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/iba-cybershield", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/iba-cybershield/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25157"
+BASE_PATH = "/"

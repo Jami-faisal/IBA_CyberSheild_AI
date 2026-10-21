@@ -1,0 +1,50 @@
+Build a modern cybersecurity awareness website called IBA CyberShield AI with the tagline “Think before you click.” It is a student-focused tool for learning how to spot scams, phishing, and account takeovers.
+
+Design: Dark theme with a deep navy background (
+#0b0f19), dark slate cards, electric blue highlights, and a cyan accent. Use green, amber, and red only for status badges. Inter font, rounded corners, subtle borders, smooth transitions, fully responsive. Navbar: Chat, Scam Checklist, Emergency Help, Security Guides, FAQ, Feedback.
+
+Home page = Cyber GPT chat (ChatGPT-style):
+
+Short header with the name and tagline, plus a small notice: “Never paste real passwords or OTPs here.”
+Chat window labeled “Cyber GPT — Security Advisor” with a message list (user on the right, AI on the left), a fixed input at the bottom, a typing indicator, and a “New chat” button.
+Welcome message: “Hello! Ask me about suspicious links, 2FA, or what to do if you clicked something bad.”
+4 clickable quick-prompt chips: “Is this WhatsApp scholarship link fake?”, “How do I turn on 2FA for my student email?”, “I just entered my password on a strange link!”, “What are common signs of portal phishing?”
+Use Lovable Cloud AI with a system prompt that restricts Cyber GPT to cybersecurity awareness for students. Answers should be clear, in step-by-step action items, and must never ask for passwords or personal data. If AI is unavailable, fall back to pre-written answers for the 4 chips.
+After answers about incidents, show a button “Log your safety action” linking to the Feedback page.
+Save chat history in the browser (local storage), no sign-in, with a “Clear history” button.
+
+Scam Checklist page: 4 toggle switches: “Asks for OTP, password, or financial info”, “Uses a shortened or unofficial domain (e.g., bit.ly, fake-iba-portal.com)”, “Promises unverified jobs, prizes, or urgent grade updates”, “Uses high-pressure or threatening language”. An “Analyze Threat Level” button shows a result card: GREEN (Likely Safe), AMBER (Suspicious: Do Not Enter Credentials), or RED (Critical Scam: Block & Report). Add a note: “This checklist helps you decide; it does not scan links.”
+
+Emergency Help page: A red banner “I Clicked a Bad Link” with an expandable drawer showing 4 numbered steps: 1. Disconnect Wi-Fi/mobile data immediately. 2. Change your IBA portal and email passwords from a safe device or tab. 3. Clear browser cache and sign out of all active sessions. 4. Report the incident to the IBA IT Helpdesk.
+
+Security Guides page: Tabs with visual 3-step guides for “IBA Portal & Email 2FA”, “WhatsApp Account Security”, and “Google & Personal Email”.
+
+FAQ page: An accordion with 8 to 10 questions, such as: What is IBA CyberShield AI? Is it free? Does it store my chats or passwords? Can it scan a link for me? What should I do if I already clicked a scam link? Is Cyber GPT always correct? How do I set up 2FA? Who made this and why?
+
+Feedback page: A card titled “Help Us Measure Campus Impact!” with optional Student ERP/Email, a dropdown “Which security action did you complete today?” (Turned on 2FA, Changed password, Checked a suspicious link, Reported a scam, Other), and a “Submit Feedback” button that opens my Google Form (use a placeholder URL I can replace).
+
+Add a simple footer: “Built for the IBA CCE project. For awareness only; not a replacement for official IT support.”
+
+Once Lovable builds it, replace the Google Form placeholder with your real link before deploying. Want me to write the exact pre-written answers for the 4 quick prompts for the fallback mode?
+
+no need to add extra thing jusdt the cyber gpt and faq for the student to ask quesiton no sign up nothting free to use
+
+Simpler is better. Here’s the stripped-down version: two pages only, the Cyber GPT chat and the FAQ, with no sign-up and free to use.
+
+Build a simple, clean cybersecurity awareness website called IBA CyberShield AI with the tagline “Think before you click.” It is a free tool for students to ask cybersecurity questions. No sign-up, no login, no accounts.
+
+Design: Dark theme with a deep navy background (
+#0b0f19), dark slate cards, and a blue-cyan accent. Inter font, rounded corners, subtle borders, fully responsive. Navbar with only two links: Chat and FAQ.
+
+Home page = Cyber GPT chat (ChatGPT-style):
+
+Short header with the name and tagline, and a small notice: “Free to use. No sign-up. Never paste real passwords or OTPs here.”
+Chat window labeled “Cyber GPT, Security Advisor” with a message list (user on the right, AI on the left), a fixed input at the bottom, a send button, a typing indicator, and a “New chat” button.
+Welcome message: “Hello! Ask me anything about scams, phishing, 2FA, or what to do if you clicked a bad link.”
+4 clickable quick-prompt chips: “Is this WhatsApp scholarship link fake?”, “How do I turn on 2FA for my student email?”, “I just entered my password on a strange link!”, “What are common signs of portal phishing?”
+Use Lovable Cloud AI with a system prompt limiting Cyber GPT to cybersecurity awareness for students. Answers should be short, clear, and in simple step-by-step points. It must never ask for passwords or personal data, and should politely refuse unrelated topics.
+Save chat history in the browser only (local storage) with a “Clear history” button.
+
+FAQ page: An accordion with 8 to 10 questions: What is IBA CyberShield AI? Is it free? Do I need to sign up? Does it store my chats or passwords? Can it scan a link for me? What should I do if I already clicked a scam link? Is Cyber GPT always correct? How do I turn on 2FA? Who made this and why?
+
+Footer: “Built for the IBA CCE project. For awareness only; not a replacement for official IT support.”
