@@ -1,0 +1,1 @@
+- [CyberShield scope and cost](cybershield-chat-cost.md) — keep the app chat-only with prepared replies; get approval before adding pages or live AI usage.
