@@ -10,6 +10,20 @@ import {
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { getCybersecurityGuidance } from '@/lib/cybersecurity-guidance';
 
+const TRUSTED_LINK = /(https:\/\/domainanalyzer\.com\/domain-reputation-checker\/|nccia\.gov\.pk)/g;
+
+function renderAnswerText(text: string): ReactNode[] {
+  return text.split(TRUSTED_LINK).map((part, index) => {
+    if (index % 2 === 0) return part;
+    const href = part.startsWith('http') ? part : `https://${part}`;
+    return (
+      <a key={index} href={href} target="_blank" rel="noopener noreferrer" className="answer-link">
+        {part}
+      </a>
+    );
+  });
+}
+
 const queryClient = new QueryClient();
 const STORAGE_KEY = 'iba-cybershield-chat-v1';
 
@@ -161,7 +175,7 @@ function HomePage() {
                   <span className="assistant-avatar"><ShieldCheck size={16} /></span>
                   <div className="message-content">
                     <div className="message-author">CyberShield guide</div>
-                    <div className="message-text">{message.text}</div>
+                    <div className="message-text">{renderAnswerText(message.text)}</div>
                   </div>
                 </div>
               ))}

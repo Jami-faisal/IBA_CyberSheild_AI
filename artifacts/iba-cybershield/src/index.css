@@ -180,6 +180,8 @@ a { color: inherit; text-decoration: none; }
 .message-author { margin:1px 0 7px; color:#8eb4d5; font-size:10px; font-weight:650; letter-spacing:.07em; text-transform:uppercase; }
 .message-text { color:#c2ccda; font-size:13px; line-height:1.75; white-space:pre-wrap; }
 .message-text strong { color:#edf4fd; font-weight:600; }
+.message-text .answer-link { color:#73caff; text-decoration:underline; word-break:break-all; }
+.message-text .answer-link:hover { color:#a8ddff; }
 .message-text ol, .message-text ul { margin:9px 0 1px; padding-left:19px; }
 .message-text li { margin:5px 0; padding-left:2px; }
 .user-row { display:flex; justify-content:flex-end; }

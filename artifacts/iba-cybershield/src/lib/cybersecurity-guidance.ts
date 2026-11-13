@@ -1029,6 +1029,135 @@ const topics: GuidanceTopic[] = [
   },
 ];
 
+const CHECKER_URL = 'https://domainanalyzer.com/domain-reputation-checker/';
+
+const MULTI_PART_SUFFIXES = new Set([
+  'edu.pk', 'com.pk', 'gov.pk', 'org.pk', 'net.pk', 'gob.pk', 'web.pk', 'biz.pk',
+  'co.uk', 'ac.uk', 'org.uk', 'gov.uk', 'com.au', 'edu.au', 'co.in', 'ac.in', 'gov.in',
+  'com.sa', 'edu.sa', 'co.ae', 'ac.ae', 'com.cn', 'co.jp', 'com.br',
+]);
+
+const SHORTENERS = new Set([
+  'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'ow.ly', 'cutt.ly', 'rb.gy',
+  'shorturl.at', 'tiny.cc', 'rebrand.ly', 'buff.ly', 'lnkd.in', 's.id', 'v.gd',
+]);
+
+const RISKY_TLDS = new Set([
+  'xyz', 'top', 'click', 'online', 'site', 'live', 'icu', 'buzz', 'shop', 'info',
+  'work', 'loan', 'win', 'rest', 'fit', 'gq', 'tk', 'ml', 'cf', 'ga', 'cyou', 'sbs',
+]);
+
+const KNOWN_NAMES: Record<string, string> = {
+  iba: 'iba.edu.pk', hec: 'hec.gov.pk', google: 'google.com', gmail: 'google.com',
+  microsoft: 'microsoft.com', outlook: 'microsoft.com', facebook: 'facebook.com',
+  instagram: 'instagram.com', whatsapp: 'whatsapp.com', paypal: 'paypal.com',
+  apple: 'apple.com', easypaisa: 'easypaisa.com.pk', jazzcash: 'jazzcash.com.pk',
+  nadra: 'nadra.gov.pk', bisp: 'bisp.gov.pk', daraz: 'daraz.pk', netflix: 'netflix.com',
+};
+
+const BAIT_WORDS = ['login', 'signin', 'verify', 'verification', 'update', 'secure', 'account',
+  'free', 'prize', 'claim', 'bonus', 'reward', 'gift', 'laptop', 'scholarship', 'grant', 'urgent', 'otp'];
+
+const FILE_ENDINGS = new Set(['js', 'ts', 'py', 'txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'exe', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'rar', 'html', 'css', 'json', 'md', 'csv', 'java', 'cpp', 'mp4', 'mp3', 'apk']);
+
+type FoundLink = { raw: string; host: string; domain: string; hasScheme: boolean; isHttp: boolean; rest: string; hasUserInfo: boolean };
+
+function findLinks(question: string): FoundLink[] {
+  const pattern = /\b((?:https?:\/\/)?(?:[^\s\/@:]+(?::[^\s\/@]*)?@)?(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}|\d{1,3}(?:\.\d{1,3}){3})(?::\d+)?(?:[\/?#][^\s]*)?)/gi;
+  const links: FoundLink[] = [];
+  for (const match of question.matchAll(pattern)) {
+    let raw = match[1].replace(/[.,;:!?)\]'"]+$/, '');
+    const before = question.slice(0, match.index ?? 0);
+    if (/@$/.test(before) && !/^https?:\/\//i.test(raw)) {
+      // part of an email address, e.g. name@iba.edu.pk — still worth checking the domain
+    }
+    const hasScheme = /^https?:\/\//i.test(raw);
+    if (!hasScheme && !/\//.test(raw) && raw.split('.').length < 2) continue;
+    const isHttp = /^http:\/\//i.test(raw);
+    let rest = raw.replace(/^https?:\/\//i, '');
+    let authority = rest.split(/[\/?#]/)[0];
+    const isEmail = !hasScheme && authority.includes('@') && rest === authority;
+    const hasUserInfo = authority.includes('@') && !isEmail;
+    if (authority.includes('@')) authority = authority.slice(authority.lastIndexOf('@') + 1);
+    if (isEmail) raw = authority;
+    const host = authority.replace(/:\d+$/, '').toLowerCase().replace(/\.$/, '');
+    if (!host.includes('.')) continue;
+    const ending = host.split('.').pop() ?? '';
+    if (!hasScheme && FILE_ENDINGS.has(ending)) continue;
+    // Skip things that look like file names or decimals rather than domains
+    if (!hasScheme && /^\d+(\.\d+)?$/.test(host)) continue;
+    const labels = host.split('.');
+    const isIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+    let domain = host;
+    if (!isIp && labels.length > 2) {
+      const lastTwo = labels.slice(-2).join('.');
+      domain = MULTI_PART_SUFFIXES.has(lastTwo) ? labels.slice(-3).join('.') : lastTwo;
+    }
+    links.push({ raw, host, domain, hasScheme, isHttp, rest: rest.slice(authority.length), hasUserInfo });
+    if (links.length >= 3) break;
+  }
+  return links;
+}
+
+function analyzeLink(link: FoundLink): string {
+  const { host, domain } = link;
+  const warnings: string[] = [];
+  const notes: string[] = [];
+  const isIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+  const tld = host.split('.').pop() ?? '';
+  const domainName = domain.split('.')[0];
+  const fullLower = link.raw.toLowerCase();
+
+  if (domain === 'iba.edu.pk') {
+    notes.push('The real domain is iba.edu.pk, which is IBA’s official domain.');
+  }
+
+  for (const [name, official] of Object.entries(KNOWN_NAMES)) {
+    if (domain === official || domain.endsWith('.' + official)) continue;
+    const appearsInHost = host.split(/[.-]/).includes(name) || host.includes(name + '.') || host.includes(name + '-');
+    if (appearsInHost) {
+      warnings.push(`It uses the name "${name}", but the real owner is ${domain}, not ${official}. This is a common decoy trick.`);
+      break;
+    }
+  }
+
+  if (/[0-9]/.test(domainName) && /[a-z]/.test(domainName) && /(1ba|0|1|3|5)/.test(domainName)) {
+    warnings.push(`The domain name "${domainName}" mixes numbers and letters. Check for look-alike swaps such as 1 for I or 0 for O.`);
+  }
+  if (isIp) warnings.push('It uses a raw IP address instead of a name. Real organizations almost never send login or payment links like this.');
+  if (host.includes('xn--')) warnings.push('It contains "xn--", which means it uses special characters that can imitate normal letters.');
+  if (link.hasUserInfo) warnings.push('It contains an "@" before the domain. Everything before the @ is ignored by the browser, a known trick to hide the real destination.');
+  if (SHORTENERS.has(domain) || SHORTENERS.has(host)) warnings.push(`${domain} is a link shortener, so the real destination is hidden. Don’t open it unless you can preview where it goes.`);
+  if (RISKY_TLDS.has(tld)) warnings.push(`It ends in ".${tld}", an ending that is cheap to register and often used by scam sites.`);
+  if ((domainName.match(/-/g) ?? []).length >= 2) warnings.push('The domain has several hyphens, which is common in fake sites (e.g. iba-portal-verify).');
+  if (host.split('.').length - domain.split('.').length >= 3) warnings.push('It has many subdomains in front of the real domain, which can be used to bury a fake domain at the end.');
+  if (link.isHttp) notes.push('It starts with http:// (no "s"), so the connection is not encrypted. Never enter a password on it.');
+  const bait = BAIT_WORDS.filter((w) => fullLower.includes(w));
+  if (bait.length > 0 && domain !== 'iba.edu.pk') notes.push(`It contains words like "${bait.slice(0, 3).join('", "')}", which scammers use to create urgency or trust.`);
+
+  let verdict: string;
+  if (warnings.length > 0) verdict = 'Verdict: this link shows warning signs. Treat it as UNSAFE. Don’t enter a password, OTP, CNIC or payment on it.';
+  else if (domain === 'iba.edu.pk') verdict = 'Verdict: the domain looks like the real IBA domain. Still, only sign in if you reached it by typing the address yourself or from your bookmark.';
+  else verdict = 'Verdict: no obvious red flags in the address itself, but that does not prove it’s safe. Check the domain with the tool below before trusting it.';
+
+  const lines = [`Link: ${link.raw}`, `Real domain (read right to left): ${domain}`];
+  for (const w of warnings) lines.push(`⚠ ${w}`);
+  for (const n of notes) lines.push(`• ${n}`);
+  lines.push(verdict);
+  return lines.join('\n');
+}
+
+function linkCheckAnswer(links: FoundLink[]): string {
+  const parts = [
+    'I can’t open links, but here’s what the address itself tells us:',
+    ...links.map(analyzeLink),
+    `Next step: check the domain${links.length > 1 ? 's' : ''} for free here:\n${CHECKER_URL}\nType only the real domain (${[...new Set(links.map((l) => l.domain))].join(', ')}) and press Analyze. A very new domain (less than a year old) or failed checks are strong warning signs.`,
+  ];
+  return parts.join('\n\n');
+}
+
+const INCIDENT_FIRST_PHRASES = new Set(['account hacked', 'entered my password', 'clicked a suspicious link', 'otp']);
+
 function normalize(value: string): string {
   return value
     .toLowerCase()
@@ -1102,6 +1231,15 @@ export function getCybersecurityGuidance(question: string): string {
       bestTopic = topic;
       bestScore = score;
     }
+  }
+
+  const links = findLinks(question);
+  if (links.length > 0) {
+    const analysis = linkCheckAnswer(links);
+    if (bestTopic && INCIDENT_FIRST_PHRASES.has(bestTopic.phrases[0])) {
+      return `${analysis}\n\nSince you mentioned what happened:\n${bestTopic.answer}`;
+    }
+    return analysis;
   }
 
   if (bestTopic) return bestTopic.answer;
